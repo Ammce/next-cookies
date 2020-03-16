@@ -7,6 +7,8 @@ class LoginForm extends Component {
   state = {
     email: 'Sincere@april.biz',
     password: 'hildegard.org',
+    error: '',
+    isLoading: false,
   };
 
   handleChange = e => {
@@ -19,13 +21,30 @@ class LoginForm extends Component {
   handleSubmit = e => {
     e.preventDefault();
     const { email, password } = this.state;
-    autuUser(email, password).then(() => {
-      Router.push('/profile');
+    this.setState(state => {
+      return { ...state, err: '', isLoading: true };
+    });
+
+    autuUser(email, password)
+      .then(() => {
+        Router.push('/profile');
+      })
+      .catch(this.showError);
+  };
+
+  showError = err => {
+    console.error(err);
+    this.setState(state => {
+      return {
+        ...state,
+        isLoading: false,
+        error: (err.response && err.response.data) || err.message,
+      };
     });
   };
 
   render() {
-    const { email, password } = this.state;
+    const { email, password, error, isLoading } = this.state;
     return (
       <div>
         <form>
@@ -48,14 +67,16 @@ class LoginForm extends Component {
             />
           </div>
           <div>
-            <input
+            <button
               type='submit'
-              name='email'
-              value='Submit'
+              disabled={isLoading}
               onClick={this.handleSubmit}
-            />
+            >
+              {isLoading ? 'Sending...' : 'Send'}{' '}
+            </button>
           </div>
         </form>
+        {error && <div> {error} </div>}
       </div>
     );
   }
